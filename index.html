@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#070d15">
+<style>*,*::before,*::after{box-sizing:border-box}html,body{margin:0}</style>
+<title>Sysmicon Home Prototipo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Figtree:wght@400;500;600&display=swap">
+
+<style>
+  /* Un solo mundo visual, a propósito: sala de planos nocturna. */
+  :root{
+    --bg:#070d15; --bg2:#0c1622; --panel:#101d2b; --line:#1d3247; --line2:#2a4a68;
+    --ink:#e8eef5; --muted:#8fa3b7; --steel:#6fa3d4; --steel-d:#4a7ba7; --amber:#f2b33d;
+    --gut:clamp(16px,4vw,56px);
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace; --body:'Figtree',system-ui,sans-serif;
+    /* voz tipográfica (se cambia con el selector) */
+    --disp:'Instrument Sans','Helvetica Neue',Arial,sans-serif; --dw:500; --dls:-.038em; --dlh:1; --dsz:.95;
+    --emfam:'Instrument Serif',Georgia,serif; --emst:italic; --emw:400; --emls:-.012em; --emsz:1.06em;
+  }
+  html{scroll-behavior:auto}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;overflow-x:clip}
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  .mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase}
+
+  /* NAV */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:calc(14px + env(safe-area-inset-top,0px)) var(--gut) 14px;background:linear-gradient(180deg,rgba(7,13,21,.85),rgba(7,13,21,0))}
+  .brand{display:flex;align-items:center;gap:12px;font-family:var(--body);font-weight:600;letter-spacing:.34em;font-size:14px}
+  .brand svg{width:20px;height:30px;flex:none}
+  .nav nav{display:flex;gap:26px;font-size:14px;color:var(--muted)}
+  .nav nav a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    padding:11px 18px;border-radius:2px;border:1px solid transparent;cursor:pointer;transition:transform .2s,background .2s,border-color .2s}
+  .btn.pri{background:var(--amber);color:#0a121c}
+  .btn.pri:hover{transform:translateY(-2px)}
+  .btn.sec{border-color:var(--line2);color:var(--ink);background:rgba(16,29,43,.5)}
+  .btn.sec:hover{border-color:var(--steel)}
+  @media (max-width:820px){.nav nav{display:none}}
+
+  /* ESCENA */
+  .track{position:relative;height:480vh}
+  .stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(110% 80% at 65% 55%,#12263a 0%,var(--bg) 65%)}
+  #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .stage.nogl #gl{display:none}
+  .stage.nogl{background-image:linear-gradient(rgba(111,163,212,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(111,163,212,.12) 1px,transparent 1px);background-size:32px 32px}
+  .shade{position:absolute;inset:0;pointer-events:none;background:
+    linear-gradient(90deg,rgba(7,13,21,.82) 0%,rgba(7,13,21,.35) 38%,rgba(7,13,21,0) 60%),
+    linear-gradient(0deg,rgba(7,13,21,.7) 0%,rgba(7,13,21,0) 30%)}
+  #labels{position:absolute;inset:0;pointer-events:none;z-index:6}
+  .lab{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity;white-space:nowrap}
+  .lab i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 4px rgba(242,179,61,.18)}
+  .lab span{position:absolute;left:0;bottom:6px;padding:0 0 5px 34px;border-bottom:1px solid var(--amber);color:var(--amber);transform:translateX(10px)}
+  .lab span::before{content:"";position:absolute;left:-12px;bottom:-1px;width:16px;height:1px;background:var(--amber);transform-origin:right bottom;transform:rotate(-38deg) translateY(0)}
+  /* el texto va sobre una placa oscura: sobre los muros blancos del modelo el ámbar solo se perdía */
+  .lab{filter:drop-shadow(0 0 3px rgba(7,13,21,.85))}
+  .lab span b{display:inline-block;font-weight:500;padding:4px 8px;border-radius:2px;background:rgba(7,13,21,.86);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .lab span{padding-bottom:0}
+  .lab.dim span b{padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .lab.dim i{display:none}
+  .lab.dim span{border:0;padding:3px 8px;background:rgba(7,13,21,.8);transform:translate(-50%,50%);bottom:auto;top:0}
+  .lab.dim span::before{display:none}
+
+  .copy{position:absolute;left:var(--gut);bottom:clamp(64px,13vh,140px);width:min(560px,calc(100% - 2*var(--gut)));z-index:5}
+  .step{position:absolute;left:0;bottom:0;width:100%;opacity:0;transform:translateY(16px);transition:opacity .5s,transform .6s cubic-bezier(.2,.7,.2,1);pointer-events:none}
+  .step.on{opacity:1;transform:none;pointer-events:auto}
+  .step .mono{color:var(--steel)}
+  .step h1,.step h2{font-family:var(--disp);font-weight:var(--dw);line-height:var(--dlh);letter-spacing:var(--dls);margin:14px 0 18px;text-wrap:balance}
+  /* el tamaño también obedece al ALTO de la ventana, para que el bloque nunca suba hasta el menú */
+  .step h1{font-size:calc(clamp(30px,min(6vw,9.2vh),82px)*var(--dsz))}
+  .step h1 b,.big em{color:var(--steel);font-family:var(--emfam);font-weight:var(--emw);font-style:var(--emst);letter-spacing:var(--emls);font-size:var(--emsz)}
+  .step h2{font-size:calc(clamp(26px,min(4.4vw,7.4vh),58px)*var(--dsz))}
+  .step p{color:#c4d0dc;max-width:46ch;margin:0;font-size:clamp(15px,1.25vw,17.5px)}
+  .step .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+  @media (max-height:720px){
+    .stage .copy{bottom:56px}
+    .stage .step h1,.stage .step h2{margin:8px 0 10px}
+    .stage .step p{font-size:14.5px;line-height:1.45}
+    .stage .step .row{margin-top:14px}
+    .stage .hint,.stage .proto{display:none}
+  }
+  .hint{margin-top:26px;color:var(--muted);display:flex;align-items:center;gap:10px}
+  .hint::before{content:"";width:1px;height:28px;background:linear-gradient(var(--amber),transparent);animation:drip 1.8s ease-in-out infinite}
+  @keyframes drip{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  .rail{position:absolute;right:var(--gut);top:50%;transform:translateY(-50%);list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:14px;z-index:5}
+  .rail li{display:flex;align-items:center;justify-content:flex-end;gap:12px;color:#51677c;transition:color .3s}
+  .rail li::after{content:"";width:18px;height:1px;background:currentColor;transition:width .3s}
+  .rail li.on{color:var(--amber)}
+  .rail li.on::after{width:44px}
+  .rail li.done{color:var(--steel)}
+  .readout{position:absolute;right:var(--gut);bottom:26px;display:flex;gap:22px;color:var(--muted);z-index:5;font-variant-numeric:tabular-nums}
+  .readout b{color:var(--ink);font-weight:500}
+  .proto{position:absolute;right:var(--gut);bottom:54px;color:#5d748a;z-index:5;max-width:min(46ch,40%);text-align:right;font-size:10px}
+  .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--line);z-index:6}
+  .bar i{display:block;height:100%;width:100%;background:var(--amber);transform-origin:left;transform:scaleX(0)}
+  @media (max-width:820px){
+    .rail{display:none}
+    .shade{background:linear-gradient(0deg,rgba(7,13,21,.94) 0%,rgba(7,13,21,.7) 34%,rgba(7,13,21,0) 58%)}
+    .copy{bottom:64px}
+    .readout{left:var(--gut);right:auto;bottom:22px;gap:16px}
+    .hint{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){.hint::before{animation:none}.step{transition:opacity .2s}}
+
+  /* SECCIONES */
+  .sec{padding-inline:var(--gut);padding-block:clamp(72px,11vw,150px);position:relative;border-top:1px solid var(--line)}
+  .sec-in{max-width:1240px;margin-inline:auto}
+  .kick{color:var(--steel);display:flex;align-items:center;gap:12px}
+  .kick::before{content:"";width:28px;height:1px;background:var(--steel)}
+  .big{font-family:var(--disp);font-weight:var(--dw);font-size:calc(clamp(36px,5.6vw,84px)*var(--dsz));line-height:var(--dlh);letter-spacing:var(--dls);margin:18px 0 0;text-wrap:balance;max-width:17ch}
+  .gridbg{background-image:linear-gradient(rgba(111,163,212,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(111,163,212,.06) 1px,transparent 1px);background-size:40px 40px}
+
+  .pillars{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));margin-top:clamp(40px,6vw,80px);border-top:1px solid var(--line2)}
+  .pil{padding:28px 24px 30px 0;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+  .pil h3{font-family:var(--disp);font-weight:var(--dw);font-size:calc(clamp(28px,2.7vw,38px)*var(--dsz));line-height:1.05;letter-spacing:var(--dls);margin:0}
+  .pil p{margin:0;color:var(--muted);max-width:34ch}
+  .pil .mono{color:var(--amber);margin-top:auto;padding-top:14px;font-size:10.5px}
+
+  .doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:2px;background:var(--line);border:1px solid var(--line)}
+  .door{position:relative;background:var(--bg2);padding:clamp(28px,4vw,56px);min-height:clamp(320px,38vw,520px);display:flex;flex-direction:column;justify-content:space-between;gap:40px;overflow:hidden;transition:background .4s}
+  .door::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 60% at 80% 20%,rgba(111,163,212,.2),transparent 70%);opacity:0;transition:opacity .4s}
+  .door:hover{background:#0f1f30}.door:hover::after{opacity:1}
+  .door svg{position:absolute;right:-6%;top:8%;width:62%;height:auto;opacity:.5;transition:transform .7s cubic-bezier(.2,.7,.2,1),opacity .4s}
+  .door:hover svg{transform:translate(-10px,6px) scale(1.04);opacity:.95}
+  .door h3{font-family:var(--disp);font-weight:var(--dw);font-size:calc(clamp(34px,4.2vw,62px)*var(--dsz));line-height:var(--dlh);letter-spacing:var(--dls);margin:0 0 16px;max-width:10ch;position:relative;z-index:1}
+  .door p{margin:0;color:var(--muted);max-width:38ch;position:relative;z-index:1}
+  .door .go{position:relative;z-index:1;display:flex;align-items:center;gap:12px;color:var(--amber)}
+  .door .go::after{content:"→";transition:transform .3s}
+  .door:hover .go::after{transform:translateX(8px)}
+
+  .tblwrap{overflow-x:auto;margin-top:clamp(32px,5vw,64px)}
+  table{width:100%;border-collapse:collapse;min-width:640px}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:400;text-align:left;padding:0 16px 12px 0;border-bottom:1px solid var(--line2)}
+  td{padding:22px 16px 22px 0;border-bottom:1px solid var(--line);vertical-align:baseline;color:var(--muted)}
+  td.code{font-family:var(--mono);font-size:12px;color:var(--steel)}
+  td.name{font-family:var(--disp);font-weight:var(--dw);font-size:calc(clamp(24px,2.5vw,34px)*var(--dsz));letter-spacing:var(--dls);color:var(--ink);line-height:1.05}
+  tr{transition:background .25s}
+  tbody tr:hover{background:rgba(111,163,212,.06)}
+  tbody tr:hover td.name{color:var(--amber)}
+  .note{margin-top:18px;color:#5d748a}
+
+  .duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,6vw,96px);align-items:end}
+  .duo p{color:var(--muted);max-width:52ch;margin:0 0 20px}
+  .people{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:2px;background:var(--line);border:1px solid var(--line);margin-top:clamp(32px,5vw,64px)}
+  .person{background:var(--bg2);padding:28px;display:flex;flex-direction:column;gap:6px}
+  .person b{font-family:var(--disp);font-size:calc(28px*var(--dsz));font-weight:var(--dw);letter-spacing:var(--dls)}
+  @media (max-width:820px){.proto{display:none}}
+  .person span{color:var(--muted)}
+  .end{text-align:left}
+  .end .big{max-width:14ch}
+  .end .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+  footer{padding:28px var(--gut);border-top:1px solid var(--line);color:#5d748a;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+</style>
+
+<header class="nav">
+  <a class="brand" href="#top" aria-label="Sysmicon">
+    <svg viewBox="0 0 40 60" aria-hidden="true"><polygon points="6,8 30,2 8,22" fill="#4a7ba7"/><polygon points="32,3 38,22 11,24" fill="none" stroke="#e8eef5" stroke-width="1.5"/><polygon points="12,28 36,25 28,38" fill="#4a7ba7"/><polygon points="6,30 24,40 10,45" fill="none" stroke="#e8eef5" stroke-width="1.5"/><polygon points="8,49 26,42 6,58" fill="#4a7ba7"/><polygon points="28,44 34,58 12,58" fill="none" stroke="#e8eef5" stroke-width="1.5"/></svg>
+    SYSMICON
+  </a>
+  <nav><a href="#modelos">Modelos</a><a href="#caminos">A la medida</a><a href="#desarrollo">Desarrollo</a><a href="#nosotros">Nosotros</a></nav>
+  <a class="btn pri" href="#contacto">Cotizar</a>
+</header>
+
+<main id="top">
+<section class="track" id="track" aria-label="Así se arma una casa Sysmicon">
+  <div class="stage" id="stage">
+    <canvas id="gl"></canvas>
+    <div class="shade"></div>
+    <div id="labels"></div>
+    <div class="proto mono">Modelo real: Casa El Legado (Revit) · materiales e iluminación provisionales</div>
+
+    <div class="copy">
+      <article class="step on">
+        <div class="mono">Diseño + construcción prefabricada</div>
+        <h1>Ingeniería que se arma <b>en semanas.</b></h1>
+        <p>Casas de estructura metálica y paneles: diseñadas por arquitecto, calculadas por ingeniero, armadas pieza por pieza.</p>
+        <div class="row"><a class="btn pri" href="#contacto">Cotizar mi casa →</a><a class="btn sec" href="#modelos">Ver modelos</a></div>
+        <div class="hint mono">Haz scroll y mírala armarse</div>
+      </article>
+      <article class="step">
+        <div class="mono">01 — Cimentación</div>
+        <h2>Todo empieza en un suelo bien resuelto.</h2>
+        <p>Vigas de cimentación y placa calculadas para tu lote. Mientras aquí se funde, tu estructura ya se está fabricando en taller.</p>
+      </article>
+      <article class="step">
+        <div class="mono">02 — Muros prefabricados</div>
+        <h2>Muros que llegan listos.</h2>
+        <p>Muros prefabricados de 14 cm que se montan pieza por pieza: primero el perímetro, después las divisiones. Menos mezcla, menos escombro, menos tiempo.</p>
+      </article>
+      <article class="step">
+        <div class="mono">03 — Estructura metálica</div>
+        <h2>Acero para amarrar y volar la cubierta.</h2>
+        <p>Tubería estructural que amarra los muros y sostiene cubiertas y marquesinas. Cada perfil llega cortado y numerado; en obra solo se ensambla.</p>
+      </article>
+      <article class="step">
+        <div class="mono">04 — Cubierta</div>
+        <h2>Techo puesto, casa protegida.</h2>
+        <p>Con la cubierta instalada la obra queda cerrada, y los acabados avanzan sin depender del clima.</p>
+      </article>
+      <article class="step">
+        <div class="mono">05 — Acabados</div>
+        <h2>Y un día, prendes la luz.</h2>
+        <p>Ventanería, exteriores, piscina. La misma precisión del plano, convertida en una casa real: esta es El Legado, un diseño Sysmicon.</p>
+        <div class="row"><a class="btn pri" href="#contacto">Quiero una así →</a></div>
+      </article>
+    </div>
+
+    <ol class="rail mono" id="rail"><li class="on">Lote</li><li>Cimentación</li><li>Muros</li><li>Estructura</li><li>Cubierta</li><li>Acabados</li></ol>
+    <div class="readout mono"><span>Piezas <b id="rPieces">000/000</b></span><span>Etapa <b id="rStage">00/05</b></span><span><b id="rPct">0%</b></span></div>
+    <div class="bar"><i id="bar"></i></div>
+  </div>
+</section>
+
+<section class="sec gridbg">
+  <div class="sec-in">
+    <div class="kick mono">Por qué prefabricado</div>
+    <h2 class="big">Cuatro razones. <em>Cero improvisación.</em></h2>
+    <div class="pillars">
+      <div class="pil"><h3>Más rápido</h3><p>La casa se fabrica en taller mientras se prepara el lote. En obra se ensambla, no se improvisa.</p><div class="mono">Dato por validar · semanas promedio de obra</div></div>
+      <div class="pil"><h3>Más económico</h3><p>Menos desperdicio, menos mano de obra en sitio y un presupuesto que no se mueve a mitad de camino.</p><div class="mono">Dato por validar · % de ahorro vs. tradicional</div></div>
+      <div class="pil"><h3>Más lindo</h3><p>Cada casa la diseña un arquitecto. Prefabricado no es genérico: es diseño con método.</p><div class="mono">Prueba · casas M, S19, S23 y L</div></div>
+      <div class="pil"><h3>Sismorresistente</h3><p>Estructura metálica liviana y dúctil, calculada por ingeniero civil para la zona sísmica de tu lote.</p><div class="mono">Dato por validar · cumplimiento NSR-10</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec" id="caminos">
+  <div class="sec-in">
+    <div class="kick mono">Dos caminos</div>
+    <h2 class="big" style="margin-bottom:clamp(32px,5vw,64px)">¿Cómo quieres <em>tu casa?</em></h2>
+    <div class="doors">
+      <a class="door" href="#modelos">
+        <svg viewBox="0 0 300 200" fill="none" stroke="#6fa3d4" stroke-width="1.2" aria-hidden="true"><rect x="20" y="30" width="250" height="150"/><path d="M20 110h110M130 30v150M130 80h140M200 80v100M60 30v-12h60v12M130 140h-24"/><path d="M150 180a24 24 0 0 1 24-24" stroke="#f2b33d"/></svg>
+        <div><h3>Elige un modelo</h3><p>Casas ya diseñadas y resueltas, con área, distribución y precio fijo. Escoges, ajustas acabados y arrancamos.</p></div>
+        <div class="go mono">Ver la línea de modelos</div>
+      </a>
+      <a class="door" href="#contacto">
+        <svg viewBox="0 0 300 200" fill="none" stroke="#6fa3d4" stroke-width="1.2" aria-hidden="true"><path d="M30 170 150 40l120 130" stroke-dasharray="5 5"/><path d="M60 170V110l90-50 90 50v60z"/><path d="M110 170v-40h40v40M180 120h34v26h-34z"/><circle cx="150" cy="40" r="4" fill="#f2b33d" stroke="none"/><path d="M150 40h70" stroke="#f2b33d"/></svg>
+        <div><h3>Diséñala a tu medida</h3><p>Partimos de tu lote, tu familia y tu presupuesto. Diseño arquitectónico, cálculo estructural y construcción, con el mismo equipo.</p></div>
+        <div class="go mono">Agendar asesoría</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="sec gridbg" id="modelos">
+  <div class="sec-in">
+    <div class="kick mono">Línea de modelos</div>
+    <h2 class="big">Una casa para <em>cada forma de vivir.</em></h2>
+    <div class="tblwrap">
+      <table>
+        <thead><tr><th>Ref.</th><th>Modelo</th><th>Pisos</th><th>Pensada para</th><th>Área</th></tr></thead>
+        <tbody>
+          <tr><td class="code">SM-F1</td><td class="name">Finca</td><td>1</td><td>Recreo y fines de semana, corredores amplios</td><td>por definir</td></tr>
+          <tr><td class="code">SM-C1</td><td class="name">Campestre</td><td>1</td><td>Vivienda familiar permanente en parcelación</td><td>por definir</td></tr>
+          <tr><td class="code">SM-C2</td><td class="name">Campestre Alta</td><td>2</td><td>Lotes con vista, zona social abajo y alcobas arriba</td><td>por definir</td></tr>
+          <tr><td class="code">SM-U2</td><td class="name">Urbana</td><td>2</td><td>Barrio, lote angosto entre medianeras</td><td>por definir</td></tr>
+          <tr><td class="code">SM-K1</td><td class="name">Cabaña</td><td>1</td><td>Compacta, ideal para renta turística</td><td>por definir</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note mono">Línea hipotética — nombres, áreas y precios se definen con los socios. Cada fila abre una ficha con visor 3D orbitable.</div>
+  </div>
+</section>
+
+<section class="sec" id="desarrollo">
+  <div class="sec-in duo">
+    <div><div class="kick mono">Más que casas</div><h2 class="big">Índigo Mall. <em>La misma firma, otra escala.</em></h2></div>
+    <div><p>Sysmicon también diseña y desarrolla proyectos comerciales. Índigo Mall es la prueba de que el método —diseño, ingeniería y obra bajo un mismo techo— funciona igual a gran escala.</p><a class="btn sec" href="#contacto">Conocer el frente de desarrollo →</a></div>
+  </div>
+</section>
+
+<section class="sec gridbg" id="nosotros">
+  <div class="sec-in">
+    <div class="kick mono">Quiénes están detrás</div>
+    <h2 class="big">Un arquitecto y un ingeniero. <em>Esa es la fórmula.</em></h2>
+    <div class="people">
+      <div class="person"><div class="mono" style="color:var(--steel)">Diseño</div><b>Juan Carlos</b><span>Arquitecto. Cada casa pasa por su mesa antes de llegar al taller.</span></div>
+      <div class="person"><div class="mono" style="color:var(--steel)">Estructura</div><b>Juan David</b><span>Ingeniero civil. Calcula lo que no se ve, para que lo que se ve dure.</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="sec end" id="contacto">
+  <div class="sec-in">
+    <div class="kick mono">Siguiente paso</div>
+    <h2 class="big">Hablemos de <em>tu casa.</em></h2>
+    <div class="row"><a class="btn pri" href="#contacto">Escribir por WhatsApp →</a><a class="btn sec" href="#contacto">Agendar asesoría</a></div>
+  </div>
+</section>
+</main>
+<footer class="mono"><span>Sysmicon · Diseño y construcción</span><span>Prototipo de dirección visual A — contenido por validar</span></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="legado-data.js"></script>
+<script>
+(function(){
+  var stage=document.getElementById('stage'), track=document.getElementById('track'), canvas=document.getElementById('gl');
+  var steps=[].slice.call(document.querySelectorAll('.step')), rail=[].slice.call(document.querySelectorAll('#rail li'));
+  var rPieces=document.getElementById('rPieces'), rStage=document.getElementById('rStage'), rPct=document.getElementById('rPct'), bar=document.getElementById('bar');
+  var labelsEl=document.getElementById('labels');
+  var CUTS=[0,.10,.26,.48,.68,.84,1.01];
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches, coarse=matchMedia('(pointer: coarse)').matches;
+  var p=0, ps=0, mx=0, smx=0, curIdx=-1, lastTxt='', lastPct=-1;
+  var dbgM=/[#&]p=([\d.]+)/.exec(location.hash||''), dbgP=dbgM?parseFloat(dbgM[1]):null;
+
+  function pad(n,l){n=String(n);while(n.length<l)n='0'+n;return n;}
+  function clamp01(x){return x<0?0:x>1?1:x;}
+  function smooth(x){x=clamp01(x);return x*x*(3-2*x);}
+  function lerp(a,b,t){return a+(b-a)*t;}
+
+  function readScroll(){
+    var r=track.getBoundingClientRect(), total=r.height-stage.clientHeight;
+    p=total>0?clamp01(-r.top/total):0;
+    if(dbgP!==null) p=dbgP; // #p=0.6 fija el avance (solo para revisar encuadres)
+    return r.bottom>0 && r.top<innerHeight;
+  }
+  function setUI(done,total){
+    var idx=0; for(var i=0;i<6;i++){ if(ps>=CUTS[i]) idx=i; }
+    if(idx!==curIdx){
+      curIdx=idx;
+      steps.forEach(function(s,i){s.classList.toggle('on',i===idx);});
+      rail.forEach(function(l,i){l.classList.toggle('on',i===idx);l.classList.toggle('done',i<idx);});
+      rStage.textContent=pad(idx,2)+'/05';
+    }
+    var txt=pad(done,3)+'/'+pad(total,3);
+    if(txt!==lastTxt){lastTxt=txt;rPieces.textContent=txt;}
+    var pct=Math.round(ps*100); if(pct!==lastPct){lastPct=pct;rPct.textContent=pct+'%';}
+    bar.style.transform='scaleX('+ps.toFixed(4)+')';
+  }
+
+  var gl=null;
+  try{ if(window.THREE) gl=initGL(); }catch(e){ gl=null; }
+  if(!gl) stage.classList.add('nogl');
+
+  addEventListener('pointermove',function(e){mx=(e.clientX/innerWidth)*2-1;},{passive:true});
+
+  // Render bajo demanda: solo se dibuja cuando cambia el scroll, el mouse o el tamaño.
+  var lastT=0, lastKey='', done=0, total=0, wasDirty=false, slowSum=0, slowN=0, lowered=false;
+  function frame(t){
+    var dt=Math.min(.05,(t-lastT)/1000); lastT=t;
+    var vis=readScroll();
+    ps = reduce ? p : ps+(p-ps)*(1-Math.exp(-dt*16));
+    if(Math.abs(p-ps)<0.0004) ps=p;
+    smx+=(mx-smx)*(1-Math.exp(-dt*6)); if(Math.abs(mx-smx)<0.002) smx=mx;
+    var key=ps.toFixed(5)+'|'+smx.toFixed(3)+'|'+stage.clientWidth+'x'+stage.clientHeight;
+    var dirty=key!==lastKey && vis;
+    if(dirty){
+      lastKey=key;
+      if(gl){ var r=gl.update(ps,smx); done=r[0]; total=r[1]; }
+      setUI(done,total);
+      // calidad adaptativa: si el equipo no da 40 fps mientras se hace scroll, baja resolución y sombras
+      if(gl && wasDirty && !lowered){ slowSum+=dt; slowN++; if(slowN>=40){ if(slowSum/slowN>.025){gl.lower();lowered=true;lastKey='';} slowSum=0;slowN=0; } }
+    }
+    wasDirty=dirty;
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+
+  function initGL(){
+    var D=window.LEGADO; if(!D) return null;
+    var T=THREE, BG=0x070d15, AMBER=0xf2b33d;
+    var renderer=new T.WebGLRenderer({canvas:canvas,antialias:true,powerPreference:'high-performance'});
+    renderer.setPixelRatio(Math.min(devicePixelRatio||1, coarse?1.25:1.5));
+    renderer.setClearColor(BG,1);
+    renderer.outputEncoding=T.sRGBEncoding;
+    renderer.toneMapping=T.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+    var shadows=!coarse;
+    renderer.shadowMap.enabled=shadows; renderer.shadowMap.type=T.PCFSoftShadowMap;
+
+    var scene=new T.Scene(); scene.fog=new T.Fog(BG,80,240);
+    var camera=new T.PerspectiveCamera(32,1,0.5,900);
+
+    var hemi=new T.HemisphereLight(0xbfd9f2,0x0a1420,0.5); scene.add(hemi);
+    var sun=new T.DirectionalLight(0xffffff,0.95); sun.position.set(-22,42,34);
+    sun.castShadow=shadows; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0008; sun.shadow.normalBias=0.04;
+    var BB=D.bbox, EXT=Math.max(BB[2]-BB[0],BB[3]-BB[1]), CXs=(BB[0]+BB[2])/2, CZs=(BB[1]+BB[3])/2;
+    sun.position.set(CXs-EXT*.45,EXT*.85,CZs+EXT*.7); sun.target.position.set(CXs,0,CZs); scene.add(sun.target);
+    var sc=sun.shadow.camera, sh=EXT*.72; sc.left=-sh;sc.right=sh;sc.top=sh;sc.bottom=-sh;sc.near=1;sc.far=EXT*3;
+    scene.add(sun);
+    var rim=new T.DirectionalLight(0x6fa3d4,0.45); rim.position.set(30,18,-28); scene.add(rim);
+    var warm=new T.PointLight(0xffc36b,0,48,2); warm.position.set(0,2.2,8); scene.add(warm);
+
+    var ground=new T.Mesh(new T.PlaneGeometry(900,900), new T.MeshStandardMaterial({color:0x07101a,roughness:1,metalness:0}));
+    ground.rotation.x=-Math.PI/2; ground.position.y=-0.12; ground.receiveShadow=shadows; scene.add(ground);
+    var grid=new T.GridHelper(400,200,0x2f5a84,0x16304a); grid.position.y=-0.11;
+    grid.material.transparent=true; grid.material.opacity=0.5; grid.material.depthWrite=false; scene.add(grid);
+
+    if(D.lot){
+      var l=D.lot, lp=[[l[0],l[1]],[l[2],l[1]],[l[2],l[3]],[l[0],l[3]],[l[0],l[1]]].map(function(a){return new T.Vector3(a[0],-0.08,a[1]);});
+      var lotLine=new T.Line(new T.BufferGeometry().setFromPoints(lp),
+        new T.LineDashedMaterial({color:AMBER,dashSize:1.2,gapSize:.8,transparent:true,opacity:.6}));
+      lotLine.computeLineDistances(); scene.add(lotLine);
+    }
+
+    /* ---- Casa El Legado: 2 mallas, cada pieza de Revit animada en el vertex shader ---- */
+    function dec(s,Ty){var bin=atob(s),n=bin.length,u=new Uint8Array(n);for(var i=0;i<n;i++)u[i]=bin.charCodeAt(i);return new Ty(u.buffer);}
+    var S=D.q.scale, QM=D.q.min;
+    var U={uP:{value:0},uDur:{value:D.dur},uFin:{value:0},uGlow:{value:new T.Color(AMBER)},
+      uFrom:{value:[[0,0,0],[0,-2.5,0],[0,6,0],[0,10,0],[0,9,0],[0,3,0]].map(function(a){return new T.Vector3(a[0]/S,a[1]/S,a[2]/S);})}};
+    var VPARS='attribute vec3 aCen;attribute vec2 aAnim;uniform float uP;uniform float uDur;uniform vec3 uFrom[6];varying float vK;varying float vR;\n';
+    var VMAIN='#include <begin_vertex>\n float k_=clamp((uP-aAnim.x)/uDur,0.,1.);float e_=1.-pow(1.-k_,3.);int s_=int(aAnim.y*8.+.5);\n'+
+              ' transformed=aCen+(transformed-aCen)*e_+uFrom[s_]*(1.-e_);vK=k_;\n'+
+              ' vR=fract(sin(dot(aCen.xz,vec2(12.9898,78.233))*40.)*43758.5453);\n'; // azar estable por pieza: las ventanas no se prenden todas a la vez
+    function patch(mat,glass){
+      // sin esta llave three reutiliza el mismo programa para opaco y vidrio (el código de onBeforeCompile es idéntico en texto)
+      mat.customProgramCacheKey=function(){return glass?'legado-glass':'legado-opaque';};
+      mat.onBeforeCompile=function(sh){
+        sh.uniforms.uP=U.uP; sh.uniforms.uDur=U.uDur; sh.uniforms.uFrom=U.uFrom; sh.uniforms.uFin=U.uFin; sh.uniforms.uGlow=U.uGlow;
+        sh.vertexShader=VPARS+sh.vertexShader.replace('#include <begin_vertex>',VMAIN);
+        if(sh.fragmentShader.indexOf('<emissivemap_fragment>')>-1){
+          sh.fragmentShader='uniform float uFin;uniform vec3 uGlow;varying float vK;varying float vR;\n'+sh.fragmentShader.replace('#include <emissivemap_fragment>',
+            '#include <emissivemap_fragment>\n totalEmissiveRadiance+=uGlow*(1.-vK)*step(.001,vK)*.8;\n'+
+            // ventanas (vidrio claro) se encienden en amarillo cálido, una por una; el agua solo gana un brillo azul
+            (glass?' float win_=step(.4,vColor.r);float on_=smoothstep(vR*.55,vR*.55+.4,uFin)*win_;\n'+
+                   ' totalEmissiveRadiance+=vec3(1.,.56,.13)*on_*mix(.85,1.35,vR)+vColor.rgb*.6*uFin*(1.-win_);\n'+
+                   ' diffuseColor.rgb*=1.-on_*.9; diffuseColor.a=mix(diffuseColor.a,.97,on_);\n':''));
+        }
+      };
+      return mat;
+    }
+    function build(d,glass){
+      var g=new T.BufferGeometry();
+      g.setAttribute('position',new T.BufferAttribute(dec(d.pos,Uint16Array),3,true));
+      g.setAttribute('aCen',new T.BufferAttribute(dec(d.cen,Uint16Array),3,true));
+      g.setAttribute('color',new T.BufferAttribute(dec(d.col,Uint8Array),4,true));
+      g.setAttribute('aAnim',new T.BufferAttribute(dec(d.anim,Uint16Array),2,true));
+      g.setIndex(new T.BufferAttribute(dec(d.idx,Uint32Array),1));
+      var m=new T.Mesh(g,patch(new T.MeshStandardMaterial(glass?
+        {vertexColors:true,flatShading:true,transparent:true,opacity:.42,roughness:.1,metalness:.3,depthWrite:false,side:T.DoubleSide}:
+        {vertexColors:true,flatShading:true,roughness:.78,metalness:.08,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1,side:T.DoubleSide}),glass));
+      m.scale.setScalar(S); m.position.set(QM[0],QM[1],QM[2]); m.frustumCulled=false;
+      if(!glass&&shadows){ m.castShadow=true; m.receiveShadow=true;
+        m.customDepthMaterial=patch(new T.MeshDepthMaterial({depthPacking:T.RGBADepthPacking,side:T.DoubleSide}),false); }
+      scene.add(m); return m;
+    }
+    var opaque=build(D.opaque,false), glassM=build(D.glass,true);
+
+    // plano fantasma: aristas de toda la casa en una sola geometría de líneas
+    var ghostMat=new T.LineBasicMaterial({color:0x6fa3d4,transparent:true,opacity:.3,depthWrite:false});
+    (function(){
+      var src=opaque.geometry.attributes.position.array, f=new Float32Array(src.length);
+      for(var i=0;i<src.length;i++) f[i]=src[i]/65535;
+      var tmp=new T.BufferGeometry(); tmp.setAttribute('position',new T.BufferAttribute(f,3)); tmp.setIndex(opaque.geometry.index);
+      var eg=new T.EdgesGeometry(tmp,28), ln=new T.LineSegments(eg,ghostMat);
+      ln.scale.setScalar(S); ln.position.copy(opaque.position); ln.frustumCulled=false; scene.add(ln);
+    })();
+
+    /* ---- paisajismo: césped, árboles y luces de jardín que aparecen con los acabados ---- */
+    var land=(function(){
+      var l=D.lot||[BB[0]-6,BB[1]-6,BB[2]+6,BB[3]+6], M=24, X0=l[0]-M, Z0=l[1]-M, GW=Math.ceil(l[2]-l[0]+2*M), GH=Math.ceil(l[3]-l[1]+2*M);
+      // huella de la casa en una grilla de 1 m (triángulos rasterizados en planta) + distancia a la huella
+      var dist=new Float32Array(GW*GH); for(var i=0;i<dist.length;i++) dist[i]=1e4;
+      [opaque,glassM].forEach(function(m){
+        var a=m.geometry.attributes.position.array, ix=m.geometry.index.array, k=S/65535;
+        for(var t=0;t<ix.length;t+=3){
+          var ax=a[ix[t]*3]*k+QM[0]-X0, az=a[ix[t]*3+2]*k+QM[2]-Z0, bx=a[ix[t+1]*3]*k+QM[0]-X0, bz=a[ix[t+1]*3+2]*k+QM[2]-Z0,
+              cx=a[ix[t+2]*3]*k+QM[0]-X0, cz=a[ix[t+2]*3+2]*k+QM[2]-Z0;
+          var i0=Math.max(0,Math.floor(Math.min(ax,bx,cx))), i1=Math.min(GW-1,Math.floor(Math.max(ax,bx,cx))),
+              j0=Math.max(0,Math.floor(Math.min(az,bz,cz))), j1=Math.min(GH-1,Math.floor(Math.max(az,bz,cz)));
+          var det=(bz-cz)*(ax-cx)+(cx-bx)*(az-cz), flat=Math.abs(det)<.05;
+          for(var j=j0;j<=j1;j++) for(var i=i0;i<=i1;i++){
+            if(flat){ if((i1-i0)+(j1-j0)<3) dist[j*GW+i]=0; continue; }
+            var u=((bz-cz)*(i+.5-cx)+(cx-bx)*(j+.5-cz))/det, v=((cz-az)*(i+.5-cx)+(ax-cx)*(j+.5-cz))/det;
+            if(u>=-.02&&v>=-.02&&u+v<=1.02) dist[j*GW+i]=0;
+          }
+          [[ax,az],[bx,bz],[cx,cz]].forEach(function(q){var i=Math.floor(q[0]),j=Math.floor(q[1]); if(i>=0&&j>=0&&i<GW&&j<GH) dist[j*GW+i]=0;});
+        }
+      });
+      function relax(i,j,di,dj,c){ var ii=i+di,jj=j+dj; if(ii<0||jj<0||ii>=GW||jj>=GH) return; var v=dist[jj*GW+ii]+c; if(v<dist[j*GW+i]) dist[j*GW+i]=v; }
+      for(var j=0;j<GH;j++) for(var i=0;i<GW;i++){ relax(i,j,-1,0,1); relax(i,j,0,-1,1); relax(i,j,-1,-1,1.414); relax(i,j,1,-1,1.414); }
+      for(var j=GH-1;j>=0;j--) for(var i=GW-1;i>=0;i--){ relax(i,j,1,0,1); relax(i,j,0,1,1); relax(i,j,1,1,1.414); relax(i,j,-1,1,1.414); }
+      function dAt(x,z){ var i=Math.floor(x-X0), j=Math.floor(z-Z0); return (i<0||j<0||i>=GW||j>=GH)?1e4:dist[j*GW+i]; }
+      function edge(x,z){ return Math.min(x-l[0],l[2]-x,z-l[1],l[3]-z); }
+
+      var seed=20260921; function rnd(){ seed|=0; seed=seed+0x6D2B79F5|0; var t=Math.imul(seed^seed>>>15,1|seed); t=t+Math.imul(t^t>>>7,61|t)^t; return ((t^t>>>14)>>>0)/4294967296; }
+      function hash(i,j){ var s=Math.sin(i*127.1+j*311.7)*43758.5453; return s-Math.floor(s); }
+      function noise(x,z){ var i=Math.floor(x),j=Math.floor(z),fx=smooth(x-i),fz=smooth(z-j);
+        return lerp(lerp(hash(i,j),hash(i+1,j),fx),lerp(hash(i,j+1),hash(i+1,j+1),fx),fz); }
+
+      // césped: se disuelve hacia afuera del lote para que el plano técnico siga mandando alrededor
+      var GM=20, gw=l[2]-l[0]+2*GM, gh=l[3]-l[1]+2*GM;
+      var gg=new T.PlaneGeometry(gw,gh,Math.round(gw/2.5),Math.round(gh/2.5)); gg.rotateX(-Math.PI/2); gg.translate((l[0]+l[2])/2,-0.09,(l[1]+l[3])/2);
+      var gp=gg.attributes.position, gc=new Float32Array(gp.count*4);
+      for(var i=0;i<gp.count;i++){
+        var x=gp.getX(i), z=gp.getZ(i), n=noise(x*.09,z*.09)*.65+noise(x*.31,z*.31)*.35;
+        gc[i*4]=lerp(.055,.115,n); gc[i*4+1]=lerp(.16,.27,n); gc[i*4+2]=lerp(.095,.115,n);
+        gc[i*4+3]=smooth((edge(x,z)+18)/12+(noise(x*.14+9,z*.14)-.5)*.5);
+      }
+      gg.setAttribute('color',new T.BufferAttribute(gc,4));
+      var grassMat=new T.MeshStandardMaterial({vertexColors:true,transparent:true,opacity:0,roughness:1,metalness:0,depthWrite:false});
+      var grass=new T.Mesh(gg,grassMat); grass.receiveShadow=shadows; grass.renderOrder=-1; grass.visible=false; scene.add(grass);
+
+      // altura máxima de un árbol para no tapar la casa desde el encuadre final (cámara a ~13° sobre el horizonte)
+      var cdx=Math.sin(.38), cdz=Math.cos(.38);
+      function clearH(x,z){ for(var t=2;t<90;t++){ if(dAt(x-cdx*t,z-cdz*t)<2.5) return .6+t*.2; } return 99; }
+      function far(list,x,z,min){ for(var i=0;i<list.length;i++){ var dx=list[i].x-x,dz=list[i].z-z; if(dx*dx+dz*dz<min*min) return false; } return true; }
+
+      var trees=[], shrubs=[], lamps=[];
+      for(var n=0;n<4000&&trees.length<110;n++){
+        var x=lerp(l[0]-20,l[2]+20,rnd()), z=lerp(l[1]-20,l[3]+20,rnd()), d=dAt(x,z), e=edge(x,z);
+        if(d<3.4 || rnd()>(e<0?.3:e<9?.9:.2) || !far(trees,x,z,e<0?5.5:3.8)) continue;
+        var h=Math.min(lerp(3.6,8.5,Math.pow(rnd(),1.4)),clearH(x,z));
+        // a la izquierda del encuadre va el titular: ahí solo arbolitos bajos y pocos, para que el texto se lea
+        if((x-CXs)*cdz-(z-CZs)*cdx<-12 && (x-CXs)*cdx+(z-CZs)*cdz>-14){ if(rnd()>.35) continue; h=Math.min(h,3); }
+        if(h<2.4) continue;
+        trees.push({x:x,z:z,h:h,cone:rnd()<.22,rot:rnd()*6.28,sx:lerp(.85,1.2,rnd()),dl:clamp01(d/70)*.35+rnd()*.25,c:rnd()});
+      }
+      for(var n=0;n<6000&&shrubs.length<80;n++){
+        var x=lerp(l[0],l[2],rnd()), z=lerp(l[1],l[3],rnd()), d=dAt(x,z);
+        if(d<1.3 || (d>2.8&&rnd()>.04) || !far(shrubs,x,z,1.5) || !far(trees,x,z,1.8)) continue;
+        shrubs.push({x:x,z:z,h:lerp(.45,1,rnd()),rot:rnd()*6.28,sx:lerp(.9,1.5,rnd()),dl:rnd()*.4,c:rnd()});
+      }
+      for(var n=0;n<6000&&lamps.length<20;n++){
+        var x=lerp(l[0],l[2],rnd()), z=lerp(l[1],l[3],rnd()), d=dAt(x,z);
+        if(d<2.4 || d>3.6 || !far(lamps,x,z,7) || !far(shrubs,x,z,.9)) continue;
+        lamps.push({x:x,z:z,dl:rnd()*.5});
+      }
+
+      // copa de maqueta: tres icosaedros fundidos en una sola geometría
+      function blob(){
+        var parts=[[0,0,0,1],[.62,-.18,.2,.68],[-.5,-.1,-.38,.74],[.05,.5,-.1,.6]], arrs=[], len=0;
+        parts.forEach(function(q){ var g=new T.IcosahedronGeometry(q[3],1); g.translate(q[0],q[1],q[2]); var a=(g.index?g.toNonIndexed():g).attributes.position.array; arrs.push(a); len+=a.length; });
+        var f=new Float32Array(len), o=0; arrs.forEach(function(a){f.set(a,o);o+=a.length;});
+        var g=new T.BufferGeometry(); g.setAttribute('position',new T.BufferAttribute(f,3)); g.computeVertexNormals(); return g;
+      }
+      var GREENS=[0x2f6b47,0x285a40,0x3f7a4a,0x1f4d3b,0x4f874a], col=new T.Color(), dm=new T.Object3D();
+      function inst(geo,mat,n,cast){ var m=new T.InstancedMesh(geo,mat,Math.max(1,n)); m.count=n; m.frustumCulled=false; m.castShadow=cast&&shadows; m.receiveShadow=shadows; m.visible=false; scene.add(m); return m; }
+      var leaf=new T.MeshStandardMaterial({color:0xffffff,flatShading:true,roughness:.95,metalness:0});
+      var round=trees.filter(function(t){return !t.cone;}), cones=trees.filter(function(t){return t.cone;});
+      var trunkG=new T.CylinderGeometry(.6,1,1,5); trunkG.translate(0,.5,0);
+      var coneG=new T.ConeGeometry(1,1,6); coneG.translate(0,.5,0);
+      var mTrunk=inst(trunkG,new T.MeshStandardMaterial({color:0x4a3c33,flatShading:true,roughness:1}),trees.length,true),
+          mRound=inst(blob(),leaf,round.length,true), mCone=inst(coneG,leaf,cones.length,true), mShrub=inst(blob(),leaf,shrubs.length,false);
+      function tint(m,list,dark){ list.forEach(function(t,i){ col.setHex(GREENS[Math.floor(t.c*GREENS.length)%GREENS.length]); if(dark) col.multiplyScalar(.78); m.setColorAt(i,col); }); if(m.instanceColor) m.instanceColor.needsUpdate=true; }
+      tint(mRound,round,false); tint(mCone,cones,true); tint(mShrub,shrubs,false);
+
+      var glowG=new T.PlaneGeometry(5,5); glowG.rotateX(-Math.PI/2);
+      var cv=document.createElement('canvas'); cv.width=cv.height=64; var cx2=cv.getContext('2d'), gr=cx2.createRadialGradient(32,32,0,32,32,32);
+      gr.addColorStop(0,'rgba(255,176,70,1)'); gr.addColorStop(.35,'rgba(255,160,50,.35)'); gr.addColorStop(1,'rgba(255,150,40,0)'); cx2.fillStyle=gr; cx2.fillRect(0,0,64,64);
+      var bulbMat=new T.MeshBasicMaterial({color:0xffd27a}), glowMat=new T.MeshBasicMaterial({map:new T.CanvasTexture(cv),transparent:true,opacity:0,blending:T.AdditiveBlending,depthWrite:false});
+      var mBulb=inst(new T.SphereGeometry(.17,8,6),bulbMat,lamps.length,false), mGlow=inst(glowG,glowMat,lamps.length,false);
+      mGlow.receiveShadow=false; mBulb.receiveShadow=false;
+
+      function grow(v,dl){ var t=clamp01((v-dl)/.4)-1; return 1+2.2*t*t*t+1.2*t*t; } // sale del piso con un pequeño rebote
+      function put(m,i,x,y,z,sx,sy,sz,rot){ dm.position.set(x,y,z); dm.scale.set(sx||1e-4,sy||1e-4,sz||1e-4); dm.rotation.set(0,rot,0); dm.updateMatrix(); m.setMatrixAt(i,dm.matrix); }
+      var last=-1, Y=-0.09;
+      function set(v,fin){
+        if(v===last) return; last=v;
+        var on=v>0; grass.visible=mTrunk.visible=mRound.visible=mCone.visible=mShrub.visible=mBulb.visible=mGlow.visible=on; if(!on) return;
+        grassMat.opacity=smooth(v*2.2); glowMat.opacity=fin*.7;
+        var ri=0, ci=0;
+        trees.forEach(function(t,i){
+          var s=grow(v,t.dl), h=t.h*s, w=(t.h*.028+.07)*s;
+          if(t.cone){ put(mTrunk,i,t.x,Y,t.z,w,h*.2,w,t.rot); put(mCone,ci++,t.x,Y+h*.14,t.z,h*.17*t.sx,h*.86,h*.17*t.sx,t.rot); }
+          else { var r=h*.3; put(mTrunk,i,t.x,Y,t.z,w,h*.55,w,t.rot); put(mRound,ri++,t.x,Y+h*.48+r*.62,t.z,r*t.sx,r*.92,r*t.sx,t.rot); }
+        });
+        shrubs.forEach(function(t,i){ var r=t.h*grow(v,t.dl); put(mShrub,i,t.x,Y+r*.55,t.z,r*t.sx,r*.8,r*t.sx,t.rot); });
+        lamps.forEach(function(t,i){ var s=grow(v,.45+t.dl); put(mBulb,i,t.x,Y+.55*s,t.z,s,s,s,0); put(mGlow,i,t.x,Y+.02,t.z,s,1,s,0); });
+        [mTrunk,mRound,mCone,mShrub,mBulb,mGlow].forEach(function(m){m.instanceMatrix.needsUpdate=true;});
+      }
+      return {set:set};
+    })();
+
+    /* ---- callouts con los nombres reales del modelo ---- */
+    var L=(D.labels||[]).map(function(l){return {p:l.p,t:l.t,r:l.r,dim:l.dim};});
+    L.forEach(function(l){
+      var d=document.createElement('div'); d.className='lab mono'+(l.dim?' dim':'');
+      d.innerHTML='<i></i><span><b>'+l.t+'</b></span>'; labelsEl.appendChild(d); l.el=d; l.v=new T.Vector3(l.p[0],l.p[1],l.p[2]); l.o=-1;
+    });
+
+    var T1=D.t1, total=T1.length;
+    function doneCount(x){var lo=0,hi=total;while(lo<hi){var mid=(lo+hi)>>1;if(T1[mid]<=x)lo=mid+1;else hi=mid;}return lo;}
+
+    var w=0,h=0,asp=1,tmp=new T.Vector3(),target=new T.Vector3();
+    function resize(){
+      var nw=stage.clientWidth,nh=stage.clientHeight; if(nw===w&&nh===h) return; w=nw;h=nh;asp=w/h;
+      renderer.setSize(w,h,false); camera.aspect=asp;
+      if(asp>1.15) camera.setViewOffset(w,h,-w*.1,-h*.04,w,h); else camera.setViewOffset(w,h,0,h*.18,w,h);
+      camera.updateProjectionMatrix();
+    }
+
+    function update(ps,smx){
+      resize();
+      var fin=smooth((ps-.9)/.09);
+      U.uP.value=ps; U.uFin.value=fin;
+      ghostMat.opacity=lerp(.3,.12,fin);
+      land.set(smooth((ps-.885)/.1),fin);
+      // al final cae la tarde: baja el sol y sube la luz cálida, para que las ventanas encendidas manden
+      warm.intensity=fin*3.2; hemi.intensity=.5-fin*.24; sun.intensity=.9-fin*.55; rim.intensity=.45+fin*.25;
+
+      var ea=smooth(ps), th=lerp(-.75,.38,ea)+smx*.06;
+      var fit=Math.max(1,1.55/asp), r=lerp(1.7,1.4,ea)*EXT*fit, hy=lerp(.74,.33,ea)*EXT*Math.sqrt(fit);
+      camera.position.set(CXs+Math.sin(th)*r,hy,CZs+Math.cos(th)*r);
+      target.set(CXs,lerp(.5,1.6,ea),CZs+lerp(-.04,.06,ea)*EXT); camera.lookAt(target);
+      scene.fog.near=r*1.2; scene.fog.far=r*3.6;
+      renderer.render(scene,camera);
+
+      for(var j=0;j<L.length;j++){
+        var l=L[j], o=smooth((ps-l.r[0])/.015)*(1-smooth((ps-l.r[1])/.015));
+        if(o>0){ tmp.copy(l.v).project(camera); if(tmp.z>1) o=0;
+          else l.el.style.transform='translate('+((tmp.x*.5+.5)*w).toFixed(1)+'px,'+((-tmp.y*.5+.5)*h).toFixed(1)+'px)'; }
+        if(o!==l.o){l.o=o;l.el.style.opacity=o.toFixed(3);}
+      }
+      return [doneCount(ps),total];
+    }
+    function lower(){ sun.castShadow=false; opaque.castShadow=false; renderer.setPixelRatio(1); w=0; }
+    return {update:update,lower:lower};
+  }
+})();
+</script>
+
+</body>
+
+</html>
