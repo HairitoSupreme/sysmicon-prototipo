@@ -74,6 +74,13 @@
   .lab.dim span b{padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
   .lab.flip span{left:auto;right:0;transform:translateX(-10px)}
   .lab.flip span::before{left:auto;right:-12px;transform-origin:left bottom;transform:rotate(38deg)}
+  /* celular: sobre el modelo solo el punto (con un anillo que late); el nombre va en una leyenda fija bajo el menú */
+  .labcap{position:absolute;left:var(--gut);top:calc(74px + env(safe-area-inset-top,0px));display:flex;align-items:center;gap:9px;opacity:0;color:var(--amber);font-size:10.5px;pointer-events:none;filter:drop-shadow(0 0 3px rgba(7,13,21,.9))}
+  .labcap i{flex:none;width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 3px rgba(242,179,61,.2)}
+  #labels.compact .lab span{display:none}
+  #labels.compact .lab i{animation:labpulse 1.6s ease-out infinite}
+  @keyframes labpulse{0%{box-shadow:0 0 0 0 rgba(242,179,61,.55)}100%{box-shadow:0 0 0 14px rgba(242,179,61,0)}}
+  @media (prefers-reduced-motion:reduce){#labels.compact .lab i{animation:none}}
   .lab.dim i{display:none}
   .lab.dim span{border:0;padding:3px 8px;background:rgba(7,13,21,.8);transform:translate(-50%,50%);bottom:auto;top:0}
   .lab.dim span::before{display:none}

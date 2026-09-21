@@ -271,6 +271,8 @@ window.SysEscena=function(o){
       var d=document.createElement('div'); d.className='lab mono'+(l.dim?' dim':'');
       d.innerHTML='<i></i><span><b>'+l.t+'</b></span>'; labelsEl.appendChild(d); l.el=d; l.v=new T.Vector3(l.p[0],l.p[1],l.p[2]); l.o=-1;
     });
+    // en pantallas angostas la placa tapaba medio modelo: sobre la casa queda solo el punto y el nombre pasa a una leyenda fija arriba
+    var cap=document.createElement('div'), capT='', capO=-1, compact=false; cap.className='labcap mono'; cap.innerHTML='<i></i><span></span>'; labelsEl.appendChild(cap);
 
     var T1=D.t1, total=T1.length;
     function doneCount(x){var lo=0,hi=total;while(lo<hi){var mid=(lo+hi)>>1;if(T1[mid]<=x)lo=mid+1;else hi=mid;}return lo;}
@@ -280,6 +282,7 @@ window.SysEscena=function(o){
       var nw=view.clientWidth,nh=view.clientHeight; if(nw===w&&nh===h) return; w=nw;h=nh;asp=w/h;
       renderer.setSize(w,h,false); camera.aspect=asp;
       var off=o.offset?o.offset(w,h,asp):(asp>1.15?[-w*.1,-h*.04]:[0,h*.18]); camera.setViewOffset(w,h,off[0],off[1],w,h);
+      compact=w<700; labelsEl.classList.toggle('compact',compact);
       L.forEach(function(l){l.hw=l.el.lastChild.offsetWidth/2;});
       camera.updateProjectionMatrix();
     }
@@ -300,6 +303,7 @@ window.SysEscena=function(o){
       scene.fog.near=r*1.2; scene.fog.far=r*3.6;
       renderer.render(scene,camera);
 
+      var bo=0, bt='';
       for(var j=0;j<L.length;j++){
         var l=L[j], o=smooth((ps-l.r[0])/.015)*(1-smooth((ps-l.r[1])/.015));
         if(o>0){ tmp.copy(l.v).project(camera); if(tmp.z>1) o=0;
@@ -309,11 +313,15 @@ window.SysEscena=function(o){
               var sh=fl?Math.max(0,Math.round(18-(lx-10-l.hw*2))):0; if(sh!==l.sh){l.sh=sh;l.el.lastChild.style.marginRight=-sh+'px';} } // y en pantallas angostas no se sale por la izquierda
             l.el.style.transform='translate('+lx.toFixed(1)+'px,'+((-tmp.y*.5+.5)*h).toFixed(1)+'px)'; } }
         if(o!==l.o){l.o=o;l.el.style.opacity=o.toFixed(3);}
+        if(o>bo){bo=o;bt=l.t;}
       }
+      if(!compact) bo=0;
+      if(bo>0&&bt!==capT){capT=bt;cap.lastChild.textContent=bt;}
+      if(bo!==capO){capO=bo;cap.style.opacity=bo.toFixed(3);}
       return [doneCount(ps),total];
     }
     function lower(){ sun.castShadow=false; opaque.castShadow=false; renderer.setPixelRatio(1); w=0; }
-    function dispose(){ L.forEach(function(l){ if(l.el.parentNode) l.el.parentNode.removeChild(l.el); });
+    function dispose(){ L.forEach(function(l){ if(l.el.parentNode) l.el.parentNode.removeChild(l.el); }); if(cap.parentNode) cap.parentNode.removeChild(cap);
       scene.traverse(function(n){ if(n.geometry) n.geometry.dispose(); if(n.material){ if(n.material.map) n.material.map.dispose(); n.material.dispose(); } }); renderer.dispose(); }
     return {update:update,lower:lower,dispose:dispose};
   }
