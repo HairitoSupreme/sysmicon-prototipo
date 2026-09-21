@@ -1,0 +1,362 @@
+<title>Sysmicon Portafolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=Figtree:wght@400;500;600&display=swap">
+
+<style>
+  /* Un solo mundo visual, a propósito: sala de planos nocturna. */
+  :root{
+    --bg:#070d15; --bg2:#0c1622; --panel:#101d2b; --line:#1d3247; --line2:#2a4a68;
+    --ink:#e8eef5; --muted:#8fa3b7; --steel:#6fa3d4; --steel-d:#4a7ba7; --amber:#f2b33d;
+    --gut:clamp(16px,4vw,56px);
+    --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace; --body:'Figtree',system-ui,sans-serif;
+    /* voz tipográfica (se cambia con el selector) */
+    --disp:'Instrument Sans','Helvetica Neue',Arial,sans-serif; --dw:500; --dls:-.038em; --dlh:1; --dsz:.95;
+    --emfam:'Instrument Serif',Georgia,serif; --emst:italic; --emw:400; --emls:-.012em; --emsz:1.06em;
+  }
+  html{scroll-behavior:auto}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;overflow-x:clip}
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+  .mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.09em;text-transform:uppercase}
+
+  /* NAV */
+  .nav{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    padding:calc(14px + env(safe-area-inset-top,0px)) var(--gut) 14px;background:linear-gradient(180deg,rgba(7,13,21,.85),rgba(7,13,21,0))}
+  .brand{display:flex;align-items:center;gap:12px;font-family:var(--body);font-weight:600;letter-spacing:.34em;font-size:14px}
+  .brand svg{width:20px;height:30px;flex:none}
+  .nav nav{display:flex;gap:26px;font-size:14px;color:var(--muted)}
+  .nav nav a:hover{color:var(--ink)}
+  .btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--body);font-weight:600;font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+    padding:11px 18px;border-radius:2px;border:1px solid transparent;cursor:pointer;transition:transform .2s,background .2s,border-color .2s}
+  .btn.pri{background:var(--amber);color:#0a121c}
+  .btn.pri:hover{transform:translateY(-2px)}
+  .btn.ghost{border-color:var(--line2);color:var(--ink);background:rgba(16,29,43,.5)}
+  .btn.ghost:hover{border-color:var(--steel)}
+  .burger{display:none;width:42px;height:42px;padding:0;border:1px solid var(--line2);border-radius:2px;background:rgba(16,29,43,.5);cursor:pointer;position:relative}
+  .burger i,.burger i::before{position:absolute;left:11px;width:18px;height:1.5px;background:var(--ink);transition:transform .25s}
+  .burger i{top:16px}.burger i::before{content:"";left:0;top:8px}
+  .nav.open .burger i{transform:translateY(4px) rotate(45deg)}.nav.open .burger i::before{transform:translateY(-8px) rotate(-90deg)}
+  @media (max-width:820px){
+    .burger{display:block;order:3}
+    .nav .btn.pri{margin-left:auto;padding:10px 14px}
+    .nav nav{position:fixed;inset:0;z-index:-1;flex-direction:column;justify-content:center;gap:6px;padding:80px var(--gut) 40px;background:rgba(7,13,21,.97);
+      font-family:var(--disp);font-size:34px;letter-spacing:var(--dls);color:var(--ink);opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+    .nav nav a{padding:10px 0;border-bottom:1px solid var(--line)}
+    .nav.open nav{opacity:1;visibility:visible}
+  }
+
+
+  #labels{position:absolute;inset:0;pointer-events:none;z-index:6}
+  .lab{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity;white-space:nowrap}
+  .lab i{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 0 4px rgba(242,179,61,.18)}
+  .lab span{position:absolute;left:0;bottom:6px;padding:0 0 5px 34px;border-bottom:1px solid var(--amber);color:var(--amber);transform:translateX(10px)}
+  .lab span::before{content:"";position:absolute;left:-12px;bottom:-1px;width:16px;height:1px;background:var(--amber);transform-origin:right bottom;transform:rotate(-38deg) translateY(0)}
+  /* el texto va sobre una placa oscura: sobre los muros blancos del modelo el ámbar solo se perdía */
+  .lab{filter:drop-shadow(0 0 3px rgba(7,13,21,.85))}
+  .lab span b{display:inline-block;font-weight:500;padding:4px 8px;border-radius:2px;background:rgba(7,13,21,.86);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .lab span{padding-bottom:0}
+  .lab.dim span b{padding:0;background:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+  .lab.flip span{left:auto;right:0;transform:translateX(-10px)}
+  .lab.flip span::before{left:auto;right:-12px;transform-origin:left bottom;transform:rotate(38deg)}
+  .lab.dim i{display:none}
+  .lab.dim span{border:0;padding:3px 8px;background:rgba(7,13,21,.8);transform:translate(-50%,50%);bottom:auto;top:0}
+  .lab.dim span::before{display:none}
+
+  /* SECCIONES */
+  .sec{padding-inline:var(--gut);padding-block:clamp(72px,11vw,150px);position:relative;border-top:1px solid var(--line)}
+  .sec-in{max-width:1240px;margin-inline:auto}
+  .kick{color:var(--steel);display:flex;align-items:center;gap:12px}
+  .kick::before{content:"";width:28px;height:1px;background:var(--steel)}
+  .big{font-family:var(--disp);font-weight:var(--dw);font-size:calc(clamp(36px,5.6vw,84px)*var(--dsz));line-height:var(--dlh);letter-spacing:var(--dls);margin:18px 0 0;text-wrap:balance;max-width:17ch}
+  .gridbg{background-image:linear-gradient(rgba(111,163,212,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(111,163,212,.06) 1px,transparent 1px);background-size:40px 40px}
+  .end{text-align:left}
+  .end .big{max-width:14ch}
+  .end .row{display:flex;flex-wrap:wrap;gap:12px;margin-top:36px}
+  footer{padding:28px var(--gut);border-top:1px solid var(--line);color:#5d748a;display:flex;flex-wrap:wrap;gap:8px 24px;justify-content:space-between}
+
+  /* PORTAFOLIO: a la izquierda el modelo que se arma con el scroll, a la derecha la ficha técnica */
+  .track{position:relative;height:480vh}
+  .stage{position:sticky;top:0;height:100vh;height:100svh;display:grid;grid-template-columns:minmax(0,1fr) clamp(360px,34vw,470px);overflow:hidden;background:var(--bg)}
+  .view{position:relative;min-width:0;min-height:0;overflow:hidden;background:radial-gradient(110% 80% at 50% 55%,#12263a 0%,var(--bg) 68%)}
+  #gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .stage.nogl #gl{display:none}
+  .stage.nogl .view{background-image:linear-gradient(rgba(111,163,212,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(111,163,212,.12) 1px,transparent 1px);background-size:32px 32px}
+  .view .shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(7,13,21,.8) 0%,rgba(7,13,21,0) 34%),linear-gradient(180deg,rgba(7,13,21,.7) 0%,rgba(7,13,21,0) 16%)}
+  .ttl{position:absolute;left:var(--gut);right:var(--gut);bottom:clamp(30px,6vh,64px);z-index:5;pointer-events:none}
+  .ttl .mono{color:var(--steel)}
+  .ttl h1{font-family:var(--disp);font-weight:var(--dw);letter-spacing:var(--dls);line-height:var(--dlh);font-size:calc(clamp(34px,min(5vw,8.4vh),76px)*var(--dsz));margin:12px 0 0;text-wrap:balance}
+  .ttl p{margin:12px 0 0;color:#c4d0dc;max-width:48ch}
+  .big em{color:var(--steel);font-family:var(--emfam);font-weight:var(--emw);font-style:var(--emst);letter-spacing:var(--emls);font-size:var(--emsz)}
+  .hint{margin-top:18px;color:var(--muted);display:flex;align-items:center;gap:10px;transition:opacity .4s}
+  .hint::before{content:"";width:1px;height:26px;background:linear-gradient(var(--amber),transparent)}
+  .stage.moved .hint{opacity:0}
+  .bar{position:absolute;left:0;bottom:0;height:2px;width:100%;background:var(--line);z-index:6}
+  .bar i{display:block;height:100%;width:100%;background:var(--amber);transform-origin:left;transform:scaleX(0)}
+
+  .panel{position:relative;z-index:4;min-height:0;display:flex;flex-direction:column;gap:clamp(14px,2.4vh,26px);padding:calc(76px + env(safe-area-inset-top,0px)) clamp(18px,2vw,30px) 20px;
+    background-color:var(--bg2);border-left:1px solid var(--line2);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+  .panel h2{font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;font-weight:400;color:var(--steel);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .panel h2::after{content:"";flex:1;height:1px;background:var(--line)}
+  .projs{display:flex;flex-direction:column;gap:2px}
+  .proj{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;padding:10px 12px;border:1px solid var(--line);color:var(--muted);transition:border-color .2s,color .2s,background .2s}
+  .proj:hover{border-color:var(--line2);color:var(--ink)}
+  .proj:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .proj[aria-current="true"]{border-color:var(--amber);color:var(--ink);background:rgba(242,179,61,.06)}
+  .proj .n{font-family:var(--mono);font-size:11px;color:var(--steel)}
+  .proj[aria-current="true"] .n{color:var(--amber)}
+  .proj b{font-family:var(--disp);font-weight:var(--dw);font-size:19px;letter-spacing:var(--dls)}
+  .proj span:last-child{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+  .soon{padding:9px 12px;border:1px dashed var(--line);color:#5d748a;font-size:10.5px}
+  .ficha{display:grid;grid-template-columns:1fr 1fr;gap:0 18px;margin:0}
+  .ficha div{padding:5px 0;border-bottom:1px solid var(--line);min-width:0}
+  .ficha dt{font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+  .ficha dd{margin:1px 0 0;font-size:14.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+  .ficha dd.tbd{color:#5d748a;font-style:italic}
+  .etapas{list-style:none;margin:0;padding:0;counter-reset:e -1}
+  .etapas>li{border-bottom:1px solid var(--line)}
+  .etapas button{all:unset;box-sizing:border-box;cursor:pointer;width:100%;display:grid;grid-template-columns:26px 1fr auto;align-items:center;gap:8px;padding:6px 0;color:#51677c;transition:color .25s}
+  .etapas button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+  .etapas button::before{counter-increment:e;content:"0" counter(e);font-family:var(--mono);font-size:11px}
+  .etapas button span{font-size:14.5px}
+  .etapas button::after{content:"";width:7px;height:7px;border-radius:50%;border:1px solid currentColor}
+  .etapas>li.done button{color:var(--steel)}.etapas>li.done button::after{background:currentColor}
+  .etapas>li.on button{color:var(--amber)}.etapas>li.on button span{color:var(--ink);font-weight:500}
+  .etapas>li.on button::after{background:var(--amber);box-shadow:0 0 0 4px rgba(242,179,61,.18)}
+  .etapas ul{list-style:none;margin:0;padding:0 0 0 34px;display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s cubic-bezier(.2,.7,.2,1)}
+  .etapas ul>div{overflow:hidden;min-height:0}
+  .etapas>li.on ul{grid-template-rows:1fr}
+  .etapas ul li{padding:0 0 6px 14px;position:relative;color:#c4d0dc;font-size:13.5px;line-height:1.4}
+  .etapas ul li:last-child{padding-bottom:12px}
+  .etapas ul li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:1px;background:var(--amber)}
+  /* el pie queda siempre a la vista; si la pantalla es bajita, lo de arriba hace scroll dentro del panel */
+  .pfoot{margin-top:auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 14px;position:sticky;bottom:-20px;z-index:2;margin-inline:-6px;padding:12px 6px 20px;background:linear-gradient(180deg,rgba(12,22,34,0),var(--bg2) 22%)}
+  .readout{display:flex;gap:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+  .readout b{color:var(--ink);font-weight:500}
+  .pfoot .btn{justify-content:center;padding:10px 14px}
+  .src{color:#5d748a;font-size:9.5px;line-height:1.5}
+  .mcard{display:none}
+
+  .cifras{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:clamp(36px,5vw,72px);border-top:1px solid var(--line2)}
+  .cifra{padding:26px 20px 28px 0;border-bottom:1px solid var(--line)}
+  .cifra b{display:block;font-family:var(--disp);font-weight:var(--dw);letter-spacing:var(--dls);font-size:calc(clamp(52px,6.4vw,96px)*var(--dsz));line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+  .cifra span{display:block;margin-top:10px;color:var(--muted);max-width:24ch}
+  .ficha-m{display:none}
+  .duo{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:clamp(32px,6vw,96px);align-items:end}
+  .duo p{color:var(--muted);max-width:52ch;margin:0 0 20px}
+
+  @media (max-height:880px) and (min-width:901px){
+    .panel{gap:12px;padding-top:66px}.ficha div{padding:4px 0}.ficha dd{font-size:13.5px}.etapas button{padding:5px 0}.src,.soon{display:none}
+  }
+  /* CELULAR Y TABLET VERTICAL: modelo arriba, tarjeta técnica de la etapa abajo; la ficha completa pasa a una sección después del recorrido */
+  @media (max-width:900px){
+    .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto}
+    .view .shade{background:linear-gradient(180deg,rgba(7,13,21,.75) 0%,rgba(7,13,21,0) 20%),linear-gradient(0deg,rgba(7,13,21,.55) 0%,rgba(7,13,21,0) 22%)}
+    .ttl{bottom:14px}.ttl p,.ttl .hint{display:none}
+    .ttl h1{font-size:calc(clamp(28px,8vw,44px)*var(--dsz));margin-top:6px}
+    .panel{border-left:0;border-top:1px solid var(--line2);padding:14px var(--gut) calc(14px + env(safe-area-inset-bottom,0px));gap:12px;overflow:visible}
+    .panel>section.pf,.panel>section.pe,.panel>.src{display:none}
+    .projs{flex-direction:row;overflow-x:auto;gap:6px;scrollbar-width:none;margin-inline:calc(-1*var(--gut));padding-inline:var(--gut)}
+    .projs::-webkit-scrollbar{display:none}
+    .panel h2{display:none}
+    .proj{grid-template-columns:auto auto;padding:7px 11px;flex:none}.proj b{font-size:15px}.proj span:last-child{display:none}
+    .soon{flex:none;align-self:center;padding:8px 11px;white-space:nowrap}
+    .mcard{display:block;min-height:150px}
+    .mcard .mono{color:var(--amber)}
+    .mcard h3{font-family:var(--disp);font-weight:var(--dw);letter-spacing:var(--dls);font-size:calc(24px*var(--dsz));line-height:1.1;margin:6px 0 8px}
+    .mcard ul{list-style:none;margin:0;padding:0}
+    .mcard li{padding:0 0 4px 14px;position:relative;color:#c4d0dc;font-size:14px;line-height:1.4}
+    .mcard li::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:1px;background:var(--amber)}
+    .dots{display:flex;gap:5px;margin-top:10px}
+    .dots i{flex:1;height:2px;background:var(--line2);transition:background .3s}
+    .dots i.done{background:var(--steel)}.dots i.on{background:var(--amber)}
+    .pfoot{position:static;margin:0;padding:0;background:none;flex-wrap:nowrap}
+    .pfoot .btn{padding:10px 14px;font-size:11px;white-space:nowrap;flex:none}
+    .readout{gap:14px;font-size:10.5px}.readout span{white-space:nowrap}.readout span:nth-child(2){display:none}
+    .ficha-m{display:block}
+    .ficha-m .ficha{margin-top:28px;border-top:1px solid var(--line2)}
+    .ficha-m .ficha div{padding:12px 0}.ficha-m .ficha dd{font-size:16px}
+  }
+  @media (max-width:900px) and (max-height:700px){ .mcard{min-height:0}.mcard li:nth-child(n+3){display:none} }
+  @media (prefers-reduced-motion:reduce){ .etapas ul{transition:none} }
+</style>
+
+<header class="nav">
+  <a class="brand" href="index.html" data-pg="index.html" aria-label="Sysmicon · inicio">
+    <svg viewBox="0 0 40 60" aria-hidden="true"><polygon points="6,8 30,2 8,22" fill="#4a7ba7"/><polygon points="32,3 38,22 11,24" fill="none" stroke="#e8eef5" stroke-width="1.5"/><polygon points="12,28 36,25 28,38" fill="#4a7ba7"/><polygon points="6,30 24,40 10,45" fill="none" stroke="#e8eef5" stroke-width="1.5"/><polygon points="8,49 26,42 6,58" fill="#4a7ba7"/><polygon points="28,44 34,58 12,58" fill="none" stroke="#e8eef5" stroke-width="1.5"/></svg>
+    SYSMICON
+  </a>
+  <nav id="menu"><a href="portafolio.html" data-pg="portafolio.html" aria-current="page" style="color:var(--ink)">Portafolio</a><a href="index.html#modelos" data-pg="index.html#modelos">Modelos</a><a href="index.html#caminos" data-pg="index.html#caminos">A la medida</a><a href="index.html#desarrollo" data-pg="index.html#desarrollo">Desarrollo</a><a href="index.html#nosotros" data-pg="index.html#nosotros">Nosotros</a></nav>
+  <a class="btn pri" href="#contacto">Cotizar</a>
+  <button class="burger" id="burger" aria-label="Menú" aria-expanded="false" aria-controls="menu"><i></i></button>
+</header>
+
+<main id="top">
+<section class="track" id="track" aria-label="Portafolio: cada proyecto se arma con el scroll">
+  <div class="stage" id="stage">
+    <div class="view" id="view">
+      <canvas id="gl"></canvas>
+      <div class="shade"></div>
+      <div id="labels"></div>
+      <div class="ttl">
+        <div class="mono" id="tKick"></div>
+        <h1 id="tName"></h1>
+        <p id="tDesc"></p>
+        <div class="hint mono">Haz scroll: el proyecto se arma etapa por etapa</div>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+    </div>
+
+    <aside class="panel" id="panel" aria-label="Información técnica del proyecto">
+      <section class="pp">
+        <h2>Proyectos construidos</h2>
+        <div class="projs" id="projs"></div>
+      </section>
+      <section class="pf">
+        <h2>Ficha técnica</h2>
+        <dl class="ficha" id="ficha"></dl>
+      </section>
+      <section class="pe">
+        <h2>Proceso constructivo</h2>
+        <ol class="etapas" id="etapas"></ol>
+      </section>
+      <div class="mcard" id="mcard" aria-live="polite"></div>
+      <div class="pfoot">
+        <div class="readout mono"><span>Piezas <b id="rPieces">000/000</b></span><span>Etapa <b id="rStage">00/05</b></span><span><b id="rPct">0%</b></span></div>
+        <a class="btn pri" href="#contacto">Quiero una así →</a>
+      </div>
+      <div class="src mono" id="src"></div>
+    </aside>
+  </div>
+</section>
+
+<section class="sec gridbg">
+  <div class="sec-in">
+    <div class="kick mono">El proyecto en cifras</div>
+    <h2 class="big" id="cTitle"></h2>
+    <div class="cifras" id="cifras"></div>
+  </div>
+</section>
+
+<section class="sec ficha-m">
+  <div class="sec-in">
+    <div class="kick mono">Ficha técnica</div>
+    <dl class="ficha" id="fichaM"></dl>
+    <div class="src mono" id="srcM" style="margin-top:16px"></div>
+  </div>
+</section>
+
+<section class="sec">
+  <div class="sec-in duo">
+    <div><div class="kick mono">Portafolio en construcción</div><h2 class="big">Cada obra entregada <em>entra aquí.</em></h2></div>
+    <div><p>Este portafolio crece con cada proyecto: el modelo real de la obra, armado pieza por pieza, con su ficha técnica al lado. Los siguientes proyectos están en preparación.</p><a class="btn ghost" href="index.html#modelos" data-pg="index.html#modelos">Ver la línea de modelos →</a></div>
+  </div>
+</section>
+
+<section class="sec end gridbg" id="contacto">
+  <div class="sec-in">
+    <div class="kick mono">Siguiente paso</div>
+    <h2 class="big">Hablemos de <em>tu casa.</em></h2>
+    <div class="row"><a class="btn pri" href="#contacto">Escribir por WhatsApp →</a><a class="btn ghost" href="#contacto">Agendar asesoría</a></div>
+  </div>
+</section>
+</main>
+<footer class="mono"><span>Sysmicon · Diseño y construcción</span><span>Prototipo de portafolio — datos técnicos por validar</span></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="escena.js"></script>
+<script>
+(function(){
+  /* Cada proyecto: su archivo de modelo (se carga solo cuando se abre) y su información técnica.
+     Para sumar un proyecto basta con agregar un objeto a esta lista. */
+  var PROYECTOS=[{
+    id:'el-legado', nombre:'Casa El Legado', corto:'El Legado', tipo:'Vivienda campestre', src:'legado-data.js', global:'LEGADO',
+    desc:'Casa campestre de un nivel, resuelta en volúmenes girados alrededor de patios, con piscina y espejo de agua.',
+    ficha:[['Niveles','1'],['Huella del conjunto','65 × 75 m'],
+           ['Altura libre','2,60 m'],['Altura máxima','5,70 m'],['Muros','Prefabricados · 14 cm'],['Estructura','Tubería Acesco'],
+           ['Cubierta','Teja + placa 10 cm'],['Baños','10'],['Área construida','por validar'],['Tiempo de obra','por validar']],
+    etapas:[
+      {t:'Lote',d:['Lote modelado de 77 × 87 m','Implantación en un solo nivel','Replanteo directo desde el modelo BIM']},
+      {t:'Cimentación',d:['Placa de piso en concreto','Vigas de cimentación bajo cada eje de muro','Piscina y espejo de agua fundidos en sitio']},
+      {t:'Muros prefabricados',d:['95 muros exteriores de 14 cm','184 muros interiores de 14 cm','Altura libre de 2,60 m']},
+      {t:'Estructura metálica',d:['26 perfiles rectangulares Acesco','Placa de concreto de 10 cm en cubiertas planas','59 montantes de 3 × 5 cm en fachada acristalada']},
+      {t:'Cubierta',d:['17 paños de cubierta en teja','6 marquesinas','Altura máxima de 5,70 m']},
+      {t:'Acabados',d:['Ventanería piso-techo de 2,60 m','19 paneles de sistema acristalado','Piscina, jacuzzi, kiosco y espejo de agua']}],
+    cifrasTitulo:'El Legado, <em>pieza por pieza.</em>',
+    cifras:[[279,'muros prefabricados de 14 cm'],[26,'perfiles estructurales Acesco'],[23,'paños de cubierta y marquesinas'],[521,'piezas en el modelo de obra']],
+    fuente:'Datos leídos del modelo Revit del proyecto · por validar con los socios'
+  }];
+  var CUTS=[0,.10,.26,.48,.68,.84];
+
+  function $(id){return document.getElementById(id);}
+  function pad(n,l){n=String(n);while(n.length<l)n='0'+n;return n;}
+  function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+  var stage=$('stage'), track=$('track'), bar=$('bar'), rPieces=$('rPieces'), rStage=$('rStage'), rPct=$('rPct'), mcard=$('mcard');
+  var cur=null, escena=null, etLis=[], curIdx=-1, lastTxt='', lastPct=-1;
+
+  function fichaHTML(P){return P.ficha.map(function(f){return '<div><dt>'+esc(f[0])+'</dt><dd'+(f[1]==='por validar'?' class="tbd"':'')+'>'+esc(f[1])+'</dd></div>';}).join('');}
+  function setUI(u){
+    if(u.idx!==curIdx){
+      curIdx=u.idx;
+      etLis.forEach(function(li,i){li.classList.toggle('on',i===u.idx);li.classList.toggle('done',i<u.idx);});
+      rStage.textContent=pad(u.idx,2)+'/05';
+      var pn=$('panel'), li=etLis[u.idx];
+      if(li&&pn.scrollHeight>pn.clientHeight+4) setTimeout(function(){ var top=li.offsetTop-pn.clientHeight+li.offsetHeight+86; pn.scrollTo({top:Math.max(0,top),behavior:'smooth'}); },380); // espera a que abra el acordeón
+      var e=cur.etapas[u.idx];
+      mcard.innerHTML='<div class="mono">Etapa '+pad(u.idx,2)+' de 05</div><h3>'+esc(e.t)+'</h3><ul>'+e.d.map(function(d){return '<li>'+esc(d)+'</li>';}).join('')+'</ul>'+
+        '<div class="dots">'+cur.etapas.map(function(_,i){return '<i class="'+(i<u.idx?'done':i===u.idx?'on':'')+'"></i>';}).join('')+'</div>';
+    }
+    var txt=pad(u.done,3)+'/'+pad(u.total,3); if(txt!==lastTxt){lastTxt=txt;rPieces.textContent=txt;}
+    var pct=Math.round(u.ps*100); if(pct!==lastPct){lastPct=pct;rPct.textContent=pct+'%';}
+    bar.style.transform='scaleX('+u.ps.toFixed(4)+')';
+    stage.classList.toggle('moved',u.ps>.02);
+  }
+  function irAEtapa(i){
+    var total=track.offsetHeight-stage.clientHeight, y=track.getBoundingClientRect().top+scrollY+(CUTS[i]+(i?.03:0))*total;
+    scrollTo({top:y,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  }
+  function montar(P){
+    if(escena){escena.dispose();escena=null;}
+    curIdx=-1; lastTxt=''; lastPct=-1;
+    escena=SysEscena({stage:stage,view:$('view'),track:track,canvas:$('gl'),labels:$('labels'),data:window[P.global],onUI:setUI,textZone:false,fitK:1,
+      offset:function(w,h,asp){return asp>1.15?[0,h*.05]:[0,h*.04];}});
+  }
+  function abrir(P,scrollTop){
+    cur=P;
+    [].forEach.call($('projs').querySelectorAll('.proj'),function(b){b.setAttribute('aria-current',b.getAttribute('data-id')===P.id);});
+    $('tKick').textContent='Proyecto '+pad(PROYECTOS.indexOf(P)+1,2)+' · '+P.tipo;
+    $('tName').textContent=P.nombre; $('tDesc').textContent=P.desc;
+    $('ficha').innerHTML=$('fichaM').innerHTML=fichaHTML(P);
+    $('src').textContent=$('srcM').textContent=P.fuente;
+    $('cTitle').innerHTML=P.cifrasTitulo;
+    $('cifras').innerHTML=P.cifras.map(function(c){return '<div class="cifra"><b>'+c[0]+'</b><span>'+esc(c[1])+'</span></div>';}).join('');
+    $('etapas').innerHTML=P.etapas.map(function(e){return '<li><button type="button"><span>'+esc(e.t)+'</span></button><ul><div>'+e.d.map(function(d){return '<li>'+esc(d)+'</li>';}).join('')+'</div></ul></li>';}).join('');
+    etLis=[].slice.call($('etapas').children);
+    etLis.forEach(function(li,i){li.querySelector('button').addEventListener('click',function(){irAEtapa(i);});});
+    document.title=P.nombre+' · Portafolio Sysmicon';
+    if(scrollTop) scrollTo(0,0);
+    if(window[P.global]) return montar(P);
+    var s=document.createElement('script'); s.src=P.src; s.onload=function(){ if(cur===P) montar(P); }; s.onerror=function(){stage.classList.add('nogl');}; document.head.appendChild(s);
+  }
+
+  $('projs').innerHTML=PROYECTOS.map(function(P,i){return '<button class="proj" type="button" data-id="'+P.id+'"><span class="n">'+pad(i+1,2)+'</span><b>'+esc(P.corto)+'</b><span>'+esc(P.tipo)+'</span></button>';}).join('')+
+    '<div class="soon mono">Más proyectos · en preparación</div>';
+  $('projs').addEventListener('click',function(e){
+    var b=e.target.closest('.proj'); if(!b) return;
+    var P=PROYECTOS.filter(function(x){return x.id===b.getAttribute('data-id');})[0];
+    if(P&&P!==cur){ history.replaceState(null,'','#'+P.id); abrir(P,true); }
+  });
+  // enlace directo: portafolio.html#el-legado
+  var want=(location.hash||'').slice(1).split('&')[0];
+  abrir(PROYECTOS.filter(function(x){return x.id===want;})[0]||PROYECTOS[0],false);
+
+  var nav=document.querySelector('.nav'), burger=$('burger');
+  function menu(open){nav.classList.toggle('open',open);burger.setAttribute('aria-expanded',open);document.documentElement.style.overflow=open?'hidden':'';}
+  burger.addEventListener('click',function(){menu(!nav.classList.contains('open'));});
+  nav.querySelector('nav').addEventListener('click',function(e){if(e.target.tagName==='A') menu(false);});
+  addEventListener('keydown',function(e){if(e.key==='Escape') menu(false);});
+
+  // dentro del artefacto de Claude los enlaces entre páginas apuntan al sitio público
+  var local=location.protocol==='file:'||/github\.io$/.test(location.hostname);
+  [].forEach.call(document.querySelectorAll('a[data-pg]'),function(a){a.href=(local?'':'https://hairitosupreme.github.io/sysmicon-prototipo/')+a.getAttribute('data-pg');});
+})();
+</script>
