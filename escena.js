@@ -75,8 +75,19 @@ window.SysEscena=function(o){
 
     var ground=new T.Mesh(new T.PlaneGeometry(900,900), new T.MeshStandardMaterial({color:0x07101a,roughness:1,metalness:0}));
     ground.rotation.x=-Math.PI/2; ground.position.y=-0.12; ground.receiveShadow=shadows; scene.add(ground);
-    var grid=new T.GridHelper(400,200,0x2f5a84,0x16304a); grid.position.y=-0.11;
-    grid.material.transparent=true; grid.material.opacity=0.5; grid.material.depthWrite=false; scene.add(grid);
+    // Grilla del plano dibujada en shader: cada línea mide ~1 px sin importar la distancia y, cuando las celdas de 2 m ya no caben
+    // en pantalla (lejos, o en celular), se desvanecen y quedan las de 10 m. Con líneas reales (GridHelper) el fondo hacía moiré en móvil.
+    var grid=new T.Mesh(new T.PlaneGeometry(400,400), new T.ShaderMaterial({
+      transparent:true, depthWrite:false, fog:true, extensions:{derivatives:true},
+      uniforms:T.UniformsUtils.merge([T.UniformsLib.fog,{uC1:{value:new T.Color(0x16304a)},uC2:{value:new T.Color(0x2f5a84)}}]),
+      vertexShader:'#include <fog_pars_vertex>\nvarying vec2 vW;\nvoid main(){ vec4 wp=modelMatrix*vec4(position,1.); vW=wp.xz; vec4 mvPosition=viewMatrix*wp; gl_Position=projectionMatrix*mvPosition;\n#include <fog_vertex>\n}',
+      fragmentShader:'#include <common>\n#include <fog_pars_fragment>\nuniform vec3 uC1;uniform vec3 uC2;varying vec2 vW;\n'+
+        'float dens(float size){ vec2 d=fwidth(vW/size); return 1.-smoothstep(.18,.5,max(d.x,d.y)); }\n'+
+        'float ln(float size){ vec2 c=vW/size, d=fwidth(c), g=abs(fract(c-.5)-.5)/d; return (1.-min(min(g.x,g.y),1.))*dens(size); }\n'+
+        // cerca, las líneas de 10 m casi no se distinguen de las de 2 m (el plano se ve parejo); solo resaltan donde las finas ya se fueron
+        'void main(){ float a=ln(2.), b=ln(10.), f=dens(2.); gl_FragColor=vec4(mix(uC1,uC2,b*(1.-.75*f)),max(a*.5,b*.5));\n#include <tonemapping_fragment>\n#include <encodings_fragment>\n#include <fog_fragment>\n}'
+    }));
+    grid.rotation.x=-Math.PI/2; grid.position.y=-0.11; grid.renderOrder=-2; scene.add(grid);
 
     if(D.lot){
       var l=D.lot, lp=[[l[0],l[1]],[l[2],l[1]],[l[2],l[3]],[l[0],l[3]],[l[0],l[1]]].map(function(a){return new T.Vector3(a[0],-0.08,a[1]);});
